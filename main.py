@@ -16,7 +16,7 @@ if not all([GEMINI_API_KEY, SENDER_EMAIL, GMAIL_APP_PASSWORD, RECEIVER_EMAIL]):
 
 # Configure Gemini with the updated supported model
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("gemini-3.6-flash")
 
 def fetch_pubmed_articles():
     """Fetch top 10 recent PubMed articles on calcium & osteoporosis management"""
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     articles = fetch_pubmed_articles()
     
     if articles:
-        print("Generating AI summary with gemini-2.5-flash...")
+        print("Generating AI summary with gemini-3.6-flash...")
         html_digest = generate_email_html(articles)
         
         print("Sending email via Gmail...")
