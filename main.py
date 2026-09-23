@@ -5,13 +5,16 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import google.generativeai as genai
 
-# 1. Read Environment Variables
+# Read Environment Variables
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 RECEIVER_EMAIL = os.environ.get("RECEIVER_EMAIL")
 
-# Configure Gemini
+if not all([GEMINI_API_KEY, SENDER_EMAIL, GMAIL_APP_PASSWORD, RECEIVER_EMAIL]):
+    raise ValueError("Missing required GitHub Secrets! Check your Settings -> Secrets tab.")
+
+# Configure Gemini with the updated supported model
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash")
 
@@ -60,15 +63,16 @@ def generate_email_html(articles):
 
     Create an HTML-formatted email body containing:
     1. An introduction paragraph summarizing current clinical trends.
-    2. An ordered HTML list (`<ol>`) of all 10 articles. For each item include:
-       - Article title as a hyperlinked text (`<a href="...">`) pointing to its link.
+    2. An ordered HTML list (<ol>) of all 10 articles. For each item include:
+       - Article title as a hyperlinked text (<a href="...">) pointing to its link.
        - Publication date in muted text.
        - A concise 2-sentence key clinical takeaway.
 
     Return ONLY raw valid HTML code without backticks or ```html markers.
     """
     response = model.generate_content(prompt)
-    return response.text.strip()
+    clean_html = response.text.replace("```html", "").replace("```", "").strip()
+    return clean_html
 
 def send_gmail(html_body):
     """Send formatted email via Gmail SMTP"""
@@ -88,7 +92,7 @@ if __name__ == "__main__":
     articles = fetch_pubmed_articles()
     
     if articles:
-        print("Generating AI summary...")
+        print("Generating AI summary with gemini-2.5-flash...")
         html_digest = generate_email_html(articles)
         
         print("Sending email via Gmail...")
